@@ -6,19 +6,28 @@ import tkinter as tk
 
 #example
 prolog = Prolog()
-prolog.assertz("symptom(fever, high_temperature)")
-prolog.assertz("symptom(fever, chills)")
-prolog.assertz("symptom(cold, runny_nose)")
-prolog.assertz("symptom(cold, sore_throat)")
-prolog.assertz("symptom(cold, cough)")
-prolog.assertz("symptom(flu, body_aches)")
-prolog.assertz("symptom(flu, fatigue)")
+# prolog.assertz("symptom(fever, high_temperature)")
+# prolog.assertz("symptom(fever, chills)")
+# prolog.assertz("symptom(cold, runny_nose)")
+# prolog.assertz("symptom(cold, sore_throat)")
+# prolog.assertz("symptom(cold, cough)")
+# prolog.assertz("symptom(flu, body_aches)")
+# prolog.assertz("symptom(flu, fatigue)")
 
-prolog.assertz("illness(fever)")
-prolog.assertz("illness(cold)")
-prolog.assertz("illness(flu)")
+# prolog.assertz("illness(fever)")
+# prolog.assertz("illness(cold)")
+# prolog.assertz("illness(flu)")
 
 # TODO: read illnesses descriptions from illnesses.txt and add them to the prolog knowledge base
+with open('illnesses.txt', 'r') as file:
+    for line in file:
+        illness = line.split(' ')[0].lower()
+        start_index = line.index("are") + len("are") + 1
+        symptoms = line[start_index:].split(", ")
+        symptoms[-1] = symptoms[-1][:-2].split(' ')[1]
+        for symptom in symptoms:
+            prolog.assertz(f'symptom({illness}, {symptom})')
+        prolog.assertz(f'illness({illness})')
 
 ################################################################################################
 # STEP2: Define a function to diagnose illnesses based on symptoms
