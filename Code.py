@@ -34,7 +34,25 @@ with open('illnesses.txt', 'r') as file:
 
 def diagnose(symptoms):
     #TODO: Define this function to diagnose illnesses based on symptoms
-    pass
+    all_illnesses = [illness['X'] for illness in prolog.query("illness(X)")]
+    all_illnesses_dict = {key: 0 for key in all_illnesses}
+    diagnoses = []
+    for illness in all_illnesses:
+        illness_symptoms = [symptom['Y'] for symptom in prolog.query(f"symptom({illness}, Y)")]
+        for symptom in symptoms:
+            if symptom in illness_symptoms:
+                all_illnesses_dict[illness] += 1
+    
+    max_value = max(all_illnesses_dict.values())
+    for illness in all_illnesses_dict:
+        if all_illnesses_dict[illness] == max_value:
+            diagnoses.append(illness)
+
+    return diagnoses
+        
+diagnose(['fever', 'cough'])
+
+    
 
 ################################################################################################
 # STEP3: Define a function to ask yes/no questions about the remaining symptoms to decide on the illness
