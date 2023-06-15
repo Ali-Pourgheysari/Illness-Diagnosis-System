@@ -48,39 +48,50 @@ def diagnose(symptoms):
         if all_illnesses_dict[illness] == max_value:
             diagnoses.append(illness)
 
-    return diagnoses
-        
-diagnose(['fever', 'cough'])
-
-    
+    return diagnoses    
 
 ################################################################################################
 # STEP3: Define a function to ask yes/no questions about the remaining symptoms to decide on the illness
 
-def ask_question(illnesses):
+def ask_question(illnesses, common_symptoms):
     # Enabling YES and NO Button
     yes_button.config(state=tk.NORMAL)
     no_button.config(state=tk.NORMAL)
     
     # TODO: Define a function to diagnose illnesses based on user answers to yes/no questions
+    remaining_symptoms = []
+    for illness in illnesses:
+        symptoms = [symptom['Y'] for symptom in prolog.query(f"symptom({illness}, Y)")]
+        for symptom in symptoms:
+            if symptom not in common_symptoms:
+                remaining_symptoms.append(symptom)
 
+    
     #example of working with buttons
-    # if remaining_symptoms:
-    #     question_symptom = remaining_symptoms.pop(0)
-    #     question_label.config(text="Do you have {}?".format(question_symptom))
-    #     yes_button.config(command=lambda: on_question_answer(question_symptom, True, illnesses))
-    #     no_button.config(command=lambda: on_question_answer(question_symptom, False, illnesses))
-    # else:
-    #     with open("diagnosed_illness.txt", "w") as f:
-    #         f.write(", ".join(illnesses))
-    #     root.destroy()
+    while remaining_symptoms:
+        question_symptom = remaining_symptoms.pop(0)
+        question_label.config(text="Do you have {}?".format(question_symptom))
+        yes_button.config(command=lambda: on_question_answer(question_symptom, True, illnesses))
+        no_button.config(command=lambda: on_question_answer(question_symptom, False, illnesses))
 
-    pass
+    with open("diagnosed_illness.txt", "w") as f:
+        f.write(", ".join(illnesses))
+    root.destroy()
 
 def on_question_answer(symptom, answer, illnesses):
     # TODO: Define a function to handle the answer to yes/no question and
     #       to diagnose illnesses based on user answers to yes/no questions
-    pass
+    if answer:
+        for illness in illnesses:
+            symptoms = [symptom['Y'] for symptom in prolog.query(f"symptom({illness}, Y)")]
+            if symptom not in symptoms:
+                illnesses.remove(illness)
+    else:
+        for illness in illnesses:
+            symptoms = [symptom['Y'] for symptom in prolog.query(f"symptom({illness}, Y)")]
+            if symptom in symptoms:
+                illnesses.remove(illness)
+        
 
 ################################################################################################
 # The code is for GUI creation and functionality
@@ -101,7 +112,7 @@ def on_finish_click():
             f.write(illnesses[0])
         root.destroy()
     else:
-        ask_question(illnesses)
+        ask_question(illnesses, symptoms)
 
 # Create the GUI
 root = tk.Tk()
