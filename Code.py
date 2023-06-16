@@ -4,19 +4,7 @@ import tkinter as tk
 ################################################################################################
 # STEP1: Define the knowledge base of illnesses and their symptoms
 
-#example
 prolog = Prolog()
-# prolog.assertz("symptom(fever, high_temperature)")
-# prolog.assertz("symptom(fever, chills)")
-# prolog.assertz("symptom(cold, runny_nose)")
-# prolog.assertz("symptom(cold, sore_throat)")
-# prolog.assertz("symptom(cold, cough)")
-# prolog.assertz("symptom(flu, body_aches)")
-# prolog.assertz("symptom(flu, fatigue)")
-
-# prolog.assertz("illness(fever)")
-# prolog.assertz("illness(cold)")
-# prolog.assertz("illness(flu)")
 
 # TODO: read illnesses descriptions from illnesses.txt and add them to the prolog knowledge base
 with open('illnesses.txt', 'r') as file:
@@ -36,13 +24,13 @@ def diagnose(symptoms):
     #TODO: Define this function to diagnose illnesses based on symptoms
 
     diagnoses = []
-    query = list(prolog.query("illness(X), findall(S, symptom(X, S), L), intersection(L, {}, R), length(R, N)".format(symptoms)))
+    query = list(prolog.query(f"illness(X), findall(S, symptom(X, S), L), intersection(L, {symptoms}, R), length(R, N)"))
     max_value = max([result['N'] for result in query])
     for result in query:
         if result['N'] == max_value:
             diagnoses.append(result['X'])
 
-    return diagnoses    
+    return diagnoses
 
 ################################################################################################
 # STEP3: Define a function to ask yes/no questions about the remaining symptoms to decide on the illness
@@ -55,16 +43,13 @@ def ask_question(illnesses, common_symptoms):
     # TODO: Define a function to diagnose illnesses based on user answers to yes/no questions
     remaining_symptoms = []
     for illness in illnesses:
-        symptoms = [symptom['Y'] for symptom in prolog.query(f"symptom({illness}, Y)")]
-        for symptom in symptoms:
-            if symptom not in common_symptoms:
-                remaining_symptoms.append(symptom)
+        query = list(prolog.query(f"symptom({illness}, X), not(member(X, {common_symptoms})), not(member(X, {remaining_symptoms}))"))
+        remaining_symptoms += [symptom['X'] for symptom in query]
 
-    
     #example of working with buttons
-    while remaining_symptoms:
+    while remaining_symptoms and len(illnesses) > 1:
         question_symptom = remaining_symptoms.pop(0)
-        question_label.config(text="Do you have {}?".format(question_symptom))
+        question_label.config(text=f"Do you have {question_symptom}?")
         yes_button.config(command=lambda: on_question_answer(question_symptom, True, illnesses))
         no_button.config(command=lambda: on_question_answer(question_symptom, False, illnesses))
 
@@ -72,7 +57,7 @@ def ask_question(illnesses, common_symptoms):
         f.write(", ".join(illnesses))
     root.destroy()
 
-def on_question_answer(symptom, answer, illnesses):
+def on_question_answer(symptom, answer, illnesses: list):
     # TODO: Define a function to handle the answer to yes/no question and
     #       to diagnose illnesses based on user answers to yes/no questions
     if answer:
