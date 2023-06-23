@@ -52,8 +52,9 @@ def ask_question(illnesses, common_symptoms):
     # TODO: Define a function to diagnose illnesses based on user answers to yes/no questions
 
     # Get the different symptoms of the illnesses
-    different_symptoms = calc_different_symptoms(illnesses)
-
+    query = list(prolog.query(f'illness(X), member(X, {illnesses}), symptom(X, Symptom), not(member(Symptom, {common_symptoms}))'))
+    different_symptoms = list(set(result['Symptom'] for result in query))
+    
     different_symptoms_diagnosed = set()
     #example of working with buttons
     while different_symptoms and len(illnesses) > 1:
@@ -67,7 +68,7 @@ def ask_question(illnesses, common_symptoms):
     # Diagnose illnesses based on the symptoms
     diagnosed_illness = diagnose(list(different_symptoms_diagnosed) + common_symptoms, illnesses)
     if len(diagnosed_illness) != 1:
-        illnesses = ["Unknown illness"]
+        diagnosed_illness = ["Unknown illness"]
 
     with open("diagnosed_illness.txt", "w") as f:
         f.write(", ".join(diagnosed_illness))
@@ -81,38 +82,6 @@ def on_question_answer(symptom, answer, different_symptoms_diagnosed: set):
         different_symptoms_diagnosed.add(symptom)
         
     var.set(True)
-
-def calc_different_symptoms(illnesses):
-    query_parts = []
-    # Construct the query parts for all illnesses
-    for illness in illnesses:
-        query_parts.append(f"symptom({illness}, Symptom)")
-
-    # Construct the final query by joining the query parts
-    query_all = ";".join(query_parts)
-
-    # Construct the query parts for same symptoms
-    query_parts = []
-    for i in range(len(illnesses)):
-        for j in range(i+1, len(illnesses)):
-            illness1 = illnesses[i]
-            illness2 = illnesses[j]
-            query_parts.append(f"symptom({illness1}, Symptom), symptom({illness2}, Symptom)")
-            query_parts.append(f"symptom({illness2}, Symptom), symptom({illness1}, Symptom)")
-
-    # Construct the final query by joining the query parts
-    query_same = ";".join(query_parts)
-
-    all_symptoms = [result['Symptom'] for result in prolog.query(query_all)]
-    same_symptoms = [result['Symptom'] for result in prolog.query(query_same)]
-
-    # Construct the final query by subtracting common symptoms from same symptoms
-    query = f"member(Symptom, {all_symptoms}), not(member(Symptom, {same_symptoms}))"
-
-    # Get the different symptoms
-    different_symptoms = [result['Symptom'] for result in prolog.query(query)]
-
-    return different_symptoms
 
 ################################################################################################
 # The code is for GUI creation and functionality
