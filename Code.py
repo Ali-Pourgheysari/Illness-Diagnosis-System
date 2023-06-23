@@ -30,6 +30,9 @@ def diagnose(symptoms):
         if result['N'] == max_value:
             diagnoses.append(result['X'])
 
+    if len(diagnoses) < 0:
+        return ["Unknown illness"]
+
     return diagnoses
 
 ################################################################################################
@@ -41,36 +44,68 @@ def ask_question(illnesses, common_symptoms):
     no_button.config(state=tk.NORMAL)
     
     # TODO: Define a function to diagnose illnesses based on user answers to yes/no questions
-    remaining_symptoms = []
+    query_parts = []
     for illness in illnesses:
-        query = list(prolog.query(f"symptom({illness}, X), not(member(X, {common_symptoms})), not(member(X, {remaining_symptoms}))"))
-        remaining_symptoms += [symptom['X'] for symptom in query]
+        query_parts.append(f"symptom({illness}, Symptom)")
 
+    # Construct the final query by joining the query parts
+    query_all = ";".join(query_parts)
+
+    query_parts = []
+    for i in range(len(illnesses)):
+        for j in range(i+1, len(illnesses)):
+            illness1 = illnesses[i]
+            illness2 = illnesses[j]
+            query_parts.append(f"symptom({illness1}, Symptom), symptom({illness2}, Symptom)")
+            query_parts.append(f"symptom({illness2}, Symptom), symptom({illness1}, Symptom)")
+
+    # Construct the final query by joining the query parts
+    query_same = ";".join(query_parts)
+
+    all_symptoms = [result['Symptom'] for result in prolog.query(query_all)]
+    same_symptoms = [result['Symptom'] for result in prolog.query(query_same)]
+
+    # Construct the final query by subtracting common symptoms from same symptoms
+    query = f"member(Symptom, {all_symptoms}), not(member(Symptom, {same_symptoms}))"
+
+    different_symptoms = [result['Symptom'] for result in prolog.query(query)]
+
+    different_symptoms_diagnosed = []
     #example of working with buttons
-    while remaining_symptoms and len(illnesses) > 1:
-        question_symptom = remaining_symptoms.pop(0)
+    while different_symptoms and len(illnesses) > 1:
+        question_symptom = different_symptoms.pop(0)
         question_label.config(text=f"Do you have {question_symptom}?")
-        yes_button.config(command=lambda: on_question_answer(question_symptom, True, illnesses))
-        no_button.config(command=lambda: on_question_answer(question_symptom, False, illnesses))
+        yes_button.config(command=lambda: on_question_answer(question_symptom, True, illnesses, different_symptoms_diagnosed))
+        no_button.config(command=lambda: on_question_answer(question_symptom, False, illnesses, different_symptoms_diagnosed))
+    
+        root.wait_variable(var)
+
+    
+    diagnosed_illness = diagnose(different_symptoms_diagnosed + common_symptoms)
+    if len(diagnosed_illness) != 1:
+        illnesses = ["Unknown illness"]
 
     with open("diagnosed_illness.txt", "w") as f:
         f.write(", ".join(illnesses))
     root.destroy()
 
-def on_question_answer(symptom, answer, illnesses: list):
+    
+def on_question_answer(symptom, answer, illnesses: list, different_symptoms_diagnosed: list):
     # TODO: Define a function to handle the answer to yes/no question and
     #       to diagnose illnesses based on user answers to yes/no questions
     if answer:
+        different_symptoms_diagnosed.append(symptom)
         for illness in illnesses:
-            symptoms = [symptom['Y'] for symptom in prolog.query(f"symptom({illness}, Y)")]
-            if symptom not in symptoms:
+            if list(prolog.query(f'symptom({illness}, {symptom})')) != [{}]:
                 illnesses.remove(illness)
+                break
     else:
         for illness in illnesses:
-            symptoms = [symptom['Y'] for symptom in prolog.query(f"symptom({illness}, Y)")]
-            if symptom in symptoms:
+            if list(prolog.query(f'symptom({illness}, {symptom})')) == [{}]:
                 illnesses.remove(illness)
-        
+                break
+    
+    var.set(True)
 
 ################################################################################################
 # The code is for GUI creation and functionality
@@ -129,6 +164,8 @@ no_button.config(state=tk.DISABLED)
 
 # Initialize the symptoms list
 symptoms = []
+
+var = tk.BooleanVar()
 
 # Start the GUI
 root.mainloop()
