@@ -20,11 +20,11 @@ with open('illnesses.txt', 'r') as file:
 ################################################################################################
 # STEP2: Define a function to diagnose illnesses based on symptoms
 
-def diagnose(symptoms):
+def diagnose(symptoms, illnesses):
     #TODO: Define this function to diagnose illnesses based on symptoms
 
     diagnoses = []
-    query = list(prolog.query(f"illness(X), findall(S, symptom(X, S), L), intersection(L, {symptoms}, R), length(R, N)"))
+    query = list(prolog.query(f"illness(X), member(X, {illnesses}), findall(S, symptom(X, S), L), intersection(L, {symptoms}, R), length(R, N)"))
     max_value = max([result['N'] for result in query])
     for result in query:
         if result['N'] == max_value:
@@ -75,13 +75,12 @@ def ask_question(illnesses, common_symptoms):
     while different_symptoms and len(illnesses) > 1:
         question_symptom = different_symptoms.pop(0)
         question_label.config(text=f"Do you have {question_symptom}?")
-        yes_button.config(command=lambda: on_question_answer(question_symptom, True, illnesses, different_symptoms_diagnosed))
-        no_button.config(command=lambda: on_question_answer(question_symptom, False, illnesses, different_symptoms_diagnosed))
+        yes_button.config(command=lambda: on_question_answer(question_symptom, True, different_symptoms_diagnosed))
+        no_button.config(command=lambda: on_question_answer(question_symptom, False, different_symptoms_diagnosed))
     
         root.wait_variable(var)
-
-    
-    diagnosed_illness = diagnose(different_symptoms_diagnosed + common_symptoms)
+        
+    diagnosed_illness = diagnose(different_symptoms_diagnosed + common_symptoms, illnesses)
     if len(diagnosed_illness) != 1:
         illnesses = ["Unknown illness"]
 
@@ -90,21 +89,12 @@ def ask_question(illnesses, common_symptoms):
     root.destroy()
 
     
-def on_question_answer(symptom, answer, illnesses: list, different_symptoms_diagnosed: list):
+def on_question_answer(symptom, answer, different_symptoms_diagnosed: list):
     # TODO: Define a function to handle the answer to yes/no question and
     #       to diagnose illnesses based on user answers to yes/no questions
     if answer:
         different_symptoms_diagnosed.append(symptom)
-        for illness in illnesses:
-            if list(prolog.query(f'symptom({illness}, {symptom})')) != [{}]:
-                illnesses.remove(illness)
-                break
-    else:
-        for illness in illnesses:
-            if list(prolog.query(f'symptom({illness}, {symptom})')) == [{}]:
-                illnesses.remove(illness)
-                break
-    
+        
     var.set(True)
 
 ################################################################################################
@@ -120,7 +110,8 @@ def on_next_click():
     
 #"Finish" button click event
 def on_finish_click():
-    illnesses = diagnose(symptoms)
+    input_illnesses = [result['X'] for result in prolog.query("illness(X)")]
+    illnesses = diagnose(symptoms, input_illnesses)
     if len(illnesses) == 1:
         with open("diagnosed_illness.txt", "w") as f:
             f.write(illnesses[0])
