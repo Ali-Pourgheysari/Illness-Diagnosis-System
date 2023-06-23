@@ -44,6 +44,36 @@ def ask_question(illnesses, common_symptoms):
     no_button.config(state=tk.NORMAL)
     
     # TODO: Define a function to diagnose illnesses based on user answers to yes/no questions
+    different_symptoms = calc_different_symptoms(illnesses)
+
+    different_symptoms_diagnosed = set()
+    #example of working with buttons
+    while different_symptoms and len(illnesses) > 1:
+        question_symptom = different_symptoms.pop(0)
+        question_label.config(text=f"Do you have {question_symptom}?")
+        yes_button.config(command=lambda: on_question_answer(question_symptom, True, different_symptoms_diagnosed))
+        no_button.config(command=lambda: on_question_answer(question_symptom, False, different_symptoms_diagnosed))
+    
+        root.wait_variable(var)
+        
+    diagnosed_illness = diagnose(list(different_symptoms_diagnosed) + common_symptoms, illnesses)
+    if len(diagnosed_illness) != 1:
+        illnesses = ["Unknown illness"]
+
+    with open("diagnosed_illness.txt", "w") as f:
+        f.write(", ".join(diagnosed_illness))
+    root.destroy()
+
+    
+def on_question_answer(symptom, answer, different_symptoms_diagnosed: set):
+    # TODO: Define a function to handle the answer to yes/no question and
+    #       to diagnose illnesses based on user answers to yes/no questions
+    if answer:
+        different_symptoms_diagnosed.add(symptom)
+        
+    var.set(True)
+
+def calc_different_symptoms(illnesses):
     query_parts = []
     for illness in illnesses:
         query_parts.append(f"symptom({illness}, Symptom)")
@@ -70,32 +100,7 @@ def ask_question(illnesses, common_symptoms):
 
     different_symptoms = [result['Symptom'] for result in prolog.query(query)]
 
-    different_symptoms_diagnosed = []
-    #example of working with buttons
-    while different_symptoms and len(illnesses) > 1:
-        question_symptom = different_symptoms.pop(0)
-        question_label.config(text=f"Do you have {question_symptom}?")
-        yes_button.config(command=lambda: on_question_answer(question_symptom, True, different_symptoms_diagnosed))
-        no_button.config(command=lambda: on_question_answer(question_symptom, False, different_symptoms_diagnosed))
-    
-        root.wait_variable(var)
-        
-    diagnosed_illness = diagnose(different_symptoms_diagnosed + common_symptoms, illnesses)
-    if len(diagnosed_illness) != 1:
-        illnesses = ["Unknown illness"]
-
-    with open("diagnosed_illness.txt", "w") as f:
-        f.write(", ".join(illnesses))
-    root.destroy()
-
-    
-def on_question_answer(symptom, answer, different_symptoms_diagnosed: list):
-    # TODO: Define a function to handle the answer to yes/no question and
-    #       to diagnose illnesses based on user answers to yes/no questions
-    if answer:
-        different_symptoms_diagnosed.append(symptom)
-        
-    var.set(True)
+    return different_symptoms
 
 ################################################################################################
 # The code is for GUI creation and functionality
