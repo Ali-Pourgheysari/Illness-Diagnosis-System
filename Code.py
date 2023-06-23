@@ -57,7 +57,7 @@ def ask_question(illnesses, common_symptoms):
     
     different_symptoms_diagnosed = set()
     #example of working with buttons
-    while different_symptoms and len(illnesses) > 1:
+    while different_symptoms:
         question_symptom = different_symptoms.pop(0)
         question_label.config(text=f"Do you have {question_symptom}?")
         yes_button.config(command=lambda: on_question_answer(question_symptom, True, different_symptoms_diagnosed))
