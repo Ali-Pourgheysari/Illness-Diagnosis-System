@@ -24,12 +24,18 @@ def diagnose(symptoms, illnesses):
     #TODO: Define this function to diagnose illnesses based on symptoms
 
     diagnoses = []
+
+    # Get the number of symptoms that are the same as the input symptoms
     query = list(prolog.query(f"illness(X), member(X, {illnesses}), findall(S, symptom(X, S), L), intersection(L, {symptoms}, R), length(R, N)"))
+    
+    # Get the illnesses with the maximum number of same symptoms
     max_value = max([result['N'] for result in query])
+
     for result in query:
         if result['N'] == max_value:
             diagnoses.append(result['X'])
 
+    # If there are no illnesses with the maximum number of same symptoms, set the diagnoses to unknown illness
     if len(diagnoses) < 0:
         return ["Unknown illness"]
 
@@ -44,6 +50,8 @@ def ask_question(illnesses, common_symptoms):
     no_button.config(state=tk.NORMAL)
     
     # TODO: Define a function to diagnose illnesses based on user answers to yes/no questions
+
+    # Get the different symptoms of the illnesses
     different_symptoms = calc_different_symptoms(illnesses)
 
     different_symptoms_diagnosed = set()
@@ -55,7 +63,8 @@ def ask_question(illnesses, common_symptoms):
         no_button.config(command=lambda: on_question_answer(question_symptom, False, different_symptoms_diagnosed))
     
         root.wait_variable(var)
-        
+    
+    # Diagnose illnesses based on the symptoms
     diagnosed_illness = diagnose(list(different_symptoms_diagnosed) + common_symptoms, illnesses)
     if len(diagnosed_illness) != 1:
         illnesses = ["Unknown illness"]
@@ -75,12 +84,14 @@ def on_question_answer(symptom, answer, different_symptoms_diagnosed: set):
 
 def calc_different_symptoms(illnesses):
     query_parts = []
+    # Construct the query parts for all illnesses
     for illness in illnesses:
         query_parts.append(f"symptom({illness}, Symptom)")
 
     # Construct the final query by joining the query parts
     query_all = ";".join(query_parts)
 
+    # Construct the query parts for same symptoms
     query_parts = []
     for i in range(len(illnesses)):
         for j in range(i+1, len(illnesses)):
@@ -98,6 +109,7 @@ def calc_different_symptoms(illnesses):
     # Construct the final query by subtracting common symptoms from same symptoms
     query = f"member(Symptom, {all_symptoms}), not(member(Symptom, {same_symptoms}))"
 
+    # Get the different symptoms
     different_symptoms = [result['Symptom'] for result in prolog.query(query)]
 
     return different_symptoms
@@ -158,10 +170,10 @@ no_button.grid(row=3, column=1, padx=5, pady=5)
 yes_button.config(state=tk.DISABLED)
 no_button.config(state=tk.DISABLED)
 
+var = tk.BooleanVar()
+
 # Initialize the symptoms list
 symptoms = []
-
-var = tk.BooleanVar()
 
 # Start the GUI
 root.mainloop()
