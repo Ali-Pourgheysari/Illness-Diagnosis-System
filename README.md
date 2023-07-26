@@ -4,6 +4,9 @@
 ## Intorduction
 The Illness Diagnosis System is designed to assist users in identifying potential illnesses based on the symptoms they provide. The system utilizes a knowledge base containing information about various illnesses and their associated symptoms, which is stored using Prolog's fact assertion mechanism. Through a simple GUI, users can enter their symptoms, and the system will provide potential diagnoses based on the symptoms entered.
 
+ Read the complete documentation [HERE](Documentation.pdf).
+Also you can read [THIS](Code_review.pdf) code review for more details about the code.
+
 ## How it works
 1. Step 1: Define the Knowledge Base: The code reads a knowledge base file named "illnesses.txt" that contains information about various illnesses and their associated symptoms. The knowledge base is stored using Prolog's fact assertion mechanism.
 
