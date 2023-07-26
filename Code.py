@@ -6,7 +6,6 @@ import tkinter as tk
 
 prolog = Prolog()
 
-# TODO: read illnesses descriptions from illnesses.txt and add them to the prolog knowledge base
 with open('illnesses.txt', 'r') as file:
     for line in file:
         illness = line.split(' ')[0].lower()
@@ -48,8 +47,6 @@ def ask_question(illnesses, common_symptoms):
     # Enabling YES and NO Button
     yes_button.config(state=tk.NORMAL)
     no_button.config(state=tk.NORMAL)
-    
-    # TODO: Define a function to diagnose illnesses based on user answers to yes/no questions
 
     # Get the different symptoms of the illnesses
     query = list(prolog.query(f'illness(X), member(X, {illnesses}), symptom(X, Symptom), not(member(Symptom, {common_symptoms}))'))
@@ -76,8 +73,6 @@ def ask_question(illnesses, common_symptoms):
 
     
 def on_question_answer(symptom, answer, different_symptoms_diagnosed: set):
-    # TODO: Define a function to handle the answer to yes/no question and
-    #       to diagnose illnesses based on user answers to yes/no questions
     if answer:
         different_symptoms_diagnosed.add(symptom)
         
