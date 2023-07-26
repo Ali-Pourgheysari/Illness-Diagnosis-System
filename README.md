@@ -27,6 +27,7 @@ To run the Illness Diagnosis System, you need the following dependencies:
 1. Install pyswip and `tkinter` dependencies. You can use `pip` to install `pyswip`:
 ```bash
 pip install pyswip
+pip install tkinter
 ```
 2. Clone the repository:
 ```bash
