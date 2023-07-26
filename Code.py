@@ -20,8 +20,6 @@ with open('illnesses.txt', 'r') as file:
 # STEP2: Define a function to diagnose illnesses based on symptoms
 
 def diagnose(symptoms, illnesses):
-    #TODO: Define this function to diagnose illnesses based on symptoms
-
     diagnoses = []
 
     # Get the number of symptoms that are the same as the input symptoms
@@ -53,7 +51,6 @@ def ask_question(illnesses, common_symptoms):
     different_symptoms = list(set(result['Symptom'] for result in query))
     
     different_symptoms_diagnosed = set()
-    #example of working with buttons
     while different_symptoms:
         question_symptom = different_symptoms.pop(0)
         question_label.config(text=f"Do you have {question_symptom}?")
