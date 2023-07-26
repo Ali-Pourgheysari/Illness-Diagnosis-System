@@ -50,4 +50,4 @@ Note: The code relies on a complete and accurate knowledge base in "illnesses.tx
 ## Contribution
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
-Good luck! :+1: :smiley: :sparkles: :tada: :rocket: :metal: :octocat:
+Good luck! :sparkles: :rocket: :octocat:
